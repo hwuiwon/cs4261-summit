@@ -55,7 +55,7 @@ async def get_post(post_id: str):
 )
 async def create_post(create_request: CreatePostRequest):
     if (
-        not create_request.id
+        not create_request.post_id
         or not create_request.title
         or not create_request.description
     ):
@@ -70,7 +70,7 @@ async def create_post(create_request: CreatePostRequest):
 
     try:
         dynamodb_service.create_post(
-            id=create_request.id,
+            post_id=create_request.post_id,
             title=create_request.title,
             description=create_request.description,
             tags=create_request.tags.split(","),
