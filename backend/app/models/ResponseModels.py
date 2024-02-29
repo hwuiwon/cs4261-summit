@@ -1,3 +1,4 @@
+from models import PostModel
 from pydantic import BaseModel
 
 
@@ -8,4 +9,12 @@ class ErrorDTO(BaseModel):
 
 class GetPostResponse(BaseModel):
     status: int
-    post: dict
+    post: PostModel
+
+
+class CreatePostResponse(BaseModel):
+    status: int
+
+
+class DeletePostResponse(BaseModel):
+    status: int
