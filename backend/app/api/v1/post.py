@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from models import to_post_model
 
 from exceptions import SummitDBException, SummitException, SummitExceptionCode
 from fastapi import APIRouter
@@ -8,6 +9,7 @@ from models.ResponseModels import (
     CreatePostResponse,
     DeletePostResponse,
     ErrorDTO,
+    GetAllPostsResponse,
     GetPostResponse,
 )
 from services import DynamoDBService
@@ -41,6 +43,29 @@ async def get_post(post_id: str):
         raise
 
     return GetPostResponse(status=HTTPStatus.OK.value, post=post)
+
+
+@router.get(
+    "/posts",
+    summary="Retrieve all posts",
+    tags=["Post"],
+    response_model=GetAllPostsResponse,
+    responses={
+        200: {"model": GetAllPostsResponse, "description": "OK"},
+        400: {"model": ErrorDTO, "message": "Error: Bad request"},
+    },
+)
+async def get_posts():
+    try:
+        posts = dynamodb_service.get_all_posts()
+    except SummitDBException as e:
+        logger.error("error={}", e)
+        raise
+
+    return GetAllPostsResponse(
+        status=HTTPStatus.OK.value,
+        posts=[to_post_model(post, deserialized=True) for post in posts],
+    )
 
 
 @router.post(

@@ -12,6 +12,11 @@ class GetPostResponse(BaseModel):
     post: PostModel
 
 
+class GetAllPostsResponse(BaseModel):
+    status: int
+    posts: list[PostModel]
+
+
 class CreatePostResponse(BaseModel):
     status: int
 
