@@ -24,6 +24,12 @@ class DynamoDBService:
             aws_access_key_id=AWS_ACCESS_KEY,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
         )
+        self.resource = boto3.resource(
+            "dynamodb",
+            region_name=AWS_REGION,
+            aws_access_key_id=AWS_ACCESS_KEY,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        )
 
     def put_item(self, table_name: str, item: dict) -> None:
         try:
@@ -51,6 +57,25 @@ class DynamoDBService:
             )
 
         return response
+
+    def scan_items(self, table_name: str) -> dict:
+        table = self.resource.Table(table_name)
+
+        response = table.scan()
+
+        if "Items" not in response:
+            raise SummitDBException(
+                code=SummitDBExceptionCode.ITEM_DOES_NOT_EXIST,
+                message="No items in table",
+            )
+
+        data = response["Items"]
+
+        while "LastEvaluatedKey" in response:
+            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+            data.extend(response["Items"])
+
+        return data
 
     def delete_item(self, table_name: str, key: dict) -> dict:
         response = self.client.delete_item(
@@ -93,6 +118,14 @@ class DynamoDBService:
             return to_post_model(response)
         except SummitDBException as e:
             e.message = "Could not get post"
+            raise
+
+    def get_all_posts(self) -> PostModel:
+        try:
+            response = self.scan_items(DYNAMODB_POST_TABLE)
+            return response
+        except SummitDBException as e:
+            e.message = "Could not get all posts"
             raise
 
     def remove_post(self, post_id: str) -> dict:

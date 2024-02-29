@@ -9,8 +9,8 @@ class PostModel(BaseModel):
     tags: list[str]
 
 
-def to_post_model(response: dict) -> PostModel:
-    item = deserialize(response["Item"])
+def to_post_model(response: dict, deserialized: bool = False) -> PostModel:
+    item = response if deserialized else deserialize(response["Item"])
 
     return PostModel(
         id=item.get("id", ""),
