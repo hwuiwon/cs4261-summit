@@ -1,6 +1,7 @@
 import sys
 from http import HTTPStatus
 
+from api.v1 import post_router
 from exceptions import SummitException
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
@@ -67,3 +68,4 @@ def summit_openapi() -> dict:
 
 
 app.openapi = summit_openapi
+app.include_router(post_router, prefix="/v1")
