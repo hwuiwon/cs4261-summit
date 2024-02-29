@@ -44,7 +44,7 @@ async def get_post(post_id: str):
 
 
 @router.post(
-    "/psot",
+    "/post",
     summary="Create a new post",
     tags=["Post"],
     response_model=CreatePostResponse,
