@@ -1,8 +1,14 @@
 import boto3
 from botocore.exceptions import ClientError
-from constants import AWS_ACCESS_KEY, AWS_REGION, AWS_SECRET_ACCESS_KEY
+from constants import (
+    AWS_ACCESS_KEY,
+    AWS_REGION,
+    AWS_SECRET_ACCESS_KEY,
+    DYNAMODB_POST_TABLE,
+)
 from exceptions import SummitDBException, SummitDBExceptionCode
 from loguru import logger
+from models.PostModel import PostModel, get_post_key, to_post_model
 
 
 class DynamoDBService:
@@ -58,3 +64,38 @@ class DynamoDBService:
             )
 
         return response
+
+    def create_post(
+        self, post_id: str, title: str, description: str, tags: list[str] = []
+    ) -> None:
+        logger.info(
+            "post_id={}, title={}, description={}, tags={}",
+            post_id,
+            title,
+            description,
+            tags,
+        )
+
+        new_post = {
+            "id": {"S": post_id},
+            "title": {"S": title},
+            "description": {"S": description},
+            "tags": {"L": tags},
+        }
+
+        self.put_item(DYNAMODB_POST_TABLE, new_post)
+
+    def get_post(self, post_id: str) -> PostModel:
+        logger.info("post_id={}", post_id)
+
+        try:
+            response = self.get_item(DYNAMODB_POST_TABLE, get_post_key(post_id))
+            return to_post_model(response)
+        except SummitDBException as e:
+            e.message = "Could not get post"
+            raise
+
+    def remove_post(self, post_id: str) -> dict:
+        logger.info("post_id={}", post_id)
+
+        return self.delete_item(DYNAMODB_POST_TABLE, get_post_key(post_id))
