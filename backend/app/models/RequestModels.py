@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class CreatePostRequest(BaseModel):
-    id: str
+    post_id: str
     title: str
     description: str
     tags: str

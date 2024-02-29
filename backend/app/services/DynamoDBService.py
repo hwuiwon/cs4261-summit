@@ -80,7 +80,7 @@ class DynamoDBService:
             "id": {"S": post_id},
             "title": {"S": title},
             "description": {"S": description},
-            "tags": {"L": tags},
+            "tags": {"L": [{"S": i} for i in tags]},
         }
 
         self.put_item(DYNAMODB_POST_TABLE, new_post)
