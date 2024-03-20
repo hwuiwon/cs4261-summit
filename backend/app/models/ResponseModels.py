@@ -1,4 +1,4 @@
-from models import PostModel
+from models import PostModel, UserModel
 from pydantic import BaseModel
 
 
@@ -22,4 +22,17 @@ class CreatePostResponse(BaseModel):
 
 
 class DeletePostResponse(BaseModel):
+    status: int
+
+
+class GetUserResponse(BaseModel):
+    status: int
+    user: UserModel
+
+
+class CreateUserResponse(BaseModel):
+    status: int
+
+
+class DeleteUserResponse(BaseModel):
     status: int
