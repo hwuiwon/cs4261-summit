@@ -1,4 +1,5 @@
 import time
+from constants import SKILL_LEVEL
 import boto3
 from botocore.exceptions import ClientError
 import uuid
@@ -101,15 +102,17 @@ class DynamoDBService:
         user_id: str,
         title: str,
         description: str,
-        max_people,
+        max_people: int,
+        skill_level: str,
         tags: list[str] = [],
     ) -> None:
         logger.info(
-            "user_id={}, title={}, description={}, max_people={}, tags={}",
+            "user_id={}, title={}, description={}, max_people={}, skill_level={}, tags={}",
             user_id,
             title,
             description,
             max_people,
+            skill_level,
             tags,
         )
 
@@ -121,6 +124,7 @@ class DynamoDBService:
             "user_id": {"S": user_id},
             "title": {"S": title},
             "description": {"S": description},
+            "skill_level": {"S": skill_level},
             "max_people": {"N": str(max_people)},
             "tags": {"L": [{"S": i} for i in tags]},
             "participant_ids": {"L": [{"S": user_id}]},
@@ -187,13 +191,25 @@ class DynamoDBService:
         new_user = {
             "id": {"S": email},
             "name": {"S": name},
-            "interests": {"L": []},
+            "keywords": {"L": []},
             "current_rsvps": {"L": []},
+            "skills": {"M": {}},
             "created_at": {"S": timestamp},
             "updated_at": {"S": timestamp},
         }
 
         self.put_item(DYNAMODB_USER_TABLE, new_user)
+
+    def update_user_skills(
+        self,
+        email: str,
+        skills: dict[str, SKILL_LEVEL],
+    ) -> None:
+        logger.info("email={}, skills={}", email, skills)
+
+        user = self.get_user(email)
+        user.skills = skills
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
 
     def delete_user(self, id: str) -> dict:
         logger.info("id={}", id)

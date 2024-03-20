@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from constants import SKILL_LEVEL
 from utils import deserialize
 
 
@@ -6,7 +7,8 @@ class UserModel(BaseModel):
     id: str
     name: str
     current_rsvps: list[str]
-    interests: list[str]
+    keywords: list[str]
+    skills: dict[str, SKILL_LEVEL]
     created_at: str
     updated_at: str
 
@@ -17,8 +19,9 @@ def to_user_model(response: dict) -> UserModel:
     return UserModel(
         id=item.get("id", ""),
         name=item.get("name", ""),
-        interests=item.get("interests", []),
+        keywords=item.get("keywords", []),
         current_rsvps=item.get("current_rsvps", []),
+        skills=item.get("skills", {}),
         created_at=item.get("created_at", ""),
         updated_at=item.get("updated_at", ""),
     )
