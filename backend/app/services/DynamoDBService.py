@@ -14,6 +14,8 @@ from loguru import logger
 from models.PostModel import PostModel, get_post_key, to_post_model
 from models.UserModel import UserModel, get_user_key, to_user_model
 
+from utils import serialize
+
 
 class DynamoDBService:
     """
@@ -95,29 +97,42 @@ class DynamoDBService:
         return response
 
     def create_post(
-        self, user_id: str, title: str, description: str, tags: list[str] = []
+        self,
+        user_id: str,
+        title: str,
+        description: str,
+        max_people,
+        tags: list[str] = [],
     ) -> None:
         logger.info(
-            "user_id={}, title={}, description={}, tags={}",
+            "user_id={}, title={}, description={}, max_people={}, tags={}",
             user_id,
             title,
             description,
+            max_people,
             tags,
         )
 
         timestamp = str(time.time())
+        post_id = str(uuid.uuid4())
 
         new_post = {
-            "id": {"S": str(uuid.uuid4())},
+            "id": {"S": post_id},
             "user_id": {"S": user_id},
             "title": {"S": title},
             "description": {"S": description},
+            "max_people": {"N": str(max_people)},
             "tags": {"L": [{"S": i} for i in tags]},
+            "participant_ids": {"L": [{"S": user_id}]},
             "created_at": {"S": timestamp},
             "updated_at": {"S": timestamp},
         }
 
         self.put_item(DYNAMODB_POST_TABLE, new_post)
+
+        user = self.get_user(user_id)
+        user.current_rsvps.append(post_id)
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
 
     def get_post(self, post_id: str) -> PostModel:
         logger.info("post_id={}", post_id)
@@ -140,7 +155,16 @@ class DynamoDBService:
     def remove_post(self, post_id: str) -> dict:
         logger.info("post_id={}", post_id)
 
-        return self.delete_item(DYNAMODB_POST_TABLE, get_post_key(post_id))
+        removed_post = self.delete_item(DYNAMODB_POST_TABLE, get_post_key(post_id))
+
+        post = to_post_model(removed_post)
+
+        for id in post.participant_ids:
+            user = self.get_user(id)
+            user.current_rsvps.remove(post_id)
+            self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
+
+        return removed_post
 
     def get_user(self, user_id: str) -> UserModel:
         logger.info("user_id={}", user_id)
@@ -164,6 +188,7 @@ class DynamoDBService:
             "id": {"S": email},
             "name": {"S": name},
             "interests": {"L": []},
+            "current_rsvps": {"L": []},
             "created_at": {"S": timestamp},
             "updated_at": {"S": timestamp},
         }
@@ -180,3 +205,53 @@ class DynamoDBService:
             raise
 
         return self.delete_item(DYNAMODB_USER_TABLE, get_user_key(id))
+
+    def new_rsvp(self, user_id: str, post_id: str) -> None:
+        logger.info(
+            "user_id={}, post_id={}",
+            user_id,
+            post_id,
+        )
+
+        post = self.get_post(post_id)
+
+        if post.max_people <= len(post.participant_ids):
+            raise SummitDBException(
+                code=SummitDBExceptionCode.RSVP_IS_FULL,
+                message="RSVP list is already full",
+            )
+
+        post.participant_ids.append(user_id)
+        self.put_item(DYNAMODB_POST_TABLE, serialize(post.dict()))
+
+        user = self.get_user(user_id)
+        user.current_rsvps.append(post_id)
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
+
+    def cancel_rsvp(self, user_id: str, post_id: str) -> None:
+        logger.info(
+            "user_id={}, post_id={}",
+            user_id,
+            post_id,
+        )
+
+        post = self.get_post(post_id)
+
+        if user_id not in post.participant_ids:
+            raise SummitDBException(
+                code=SummitDBExceptionCode.DID_NOT_RSVP,
+                message="You didn't RSVP to this event",
+            )
+
+        if user_id == post.user_id:
+            raise SummitDBException(
+                code=SummitDBExceptionCode.POST_OWNER,
+                message="You can't cancel RSVP for your event. Try deleting the event",
+            )
+
+        post.participant_ids = [i for i in post.participant_ids if i != user_id]
+        self.put_item(DYNAMODB_POST_TABLE, serialize(post.dict()))
+
+        user = self.get_user(user_id)
+        user.current_rsvps.remove(post_id)
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
