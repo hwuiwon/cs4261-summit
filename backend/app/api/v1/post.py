@@ -17,6 +17,15 @@ from services import DynamoDBService
 router = APIRouter()
 dynamodb_service = DynamoDBService()
 
+"""
+| Endpoint                       | Description                          | Method |
+|--------------------------------|--------------------------------------|--------|
+| `/post`                        | Create a new post                    | POST   |
+| `/post/{post_id}`              | Retrieve a post detail               | GET    |
+| `/post/{post_id}`              | Delete a post                        | DELETE |
+| `/posts`                       | Get all posts                        | GET    |
+"""
+
 
 @router.get(
     "/post/{post_id}",
@@ -80,13 +89,13 @@ async def get_posts():
 )
 async def create_post(create_request: CreatePostRequest):
     if (
-        not create_request.post_id
+        not create_request.user_id
         or not create_request.title
         or not create_request.description
     ):
         raise SummitException(
             code=SummitExceptionCode.BAD_REQUEST,
-            message="ID, title, or description is required",
+            message="User ID, title, or description is required",
         )
 
     logger.info("create_request={}", create_request)
@@ -95,7 +104,7 @@ async def create_post(create_request: CreatePostRequest):
 
     try:
         dynamodb_service.create_post(
-            post_id=create_request.post_id,
+            user_id=create_request.user_id,
             title=create_request.title,
             description=create_request.description,
             tags=create_request.tags.split(","),
