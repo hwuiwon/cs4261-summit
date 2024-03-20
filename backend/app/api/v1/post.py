@@ -92,10 +92,11 @@ async def create_post(create_request: CreatePostRequest):
         not create_request.user_id
         or not create_request.title
         or not create_request.description
+        or not create_request.max_people
     ):
         raise SummitException(
             code=SummitExceptionCode.BAD_REQUEST,
-            message="User ID, title, or description is required",
+            message="User ID, title, description, and number of people are required",
         )
 
     logger.info("create_request={}", create_request)
@@ -108,6 +109,7 @@ async def create_post(create_request: CreatePostRequest):
             title=create_request.title,
             description=create_request.description,
             tags=create_request.tags.split(","),
+            max_people=create_request.max_people,
         )
     except SummitDBException as e:
         logger.error("create_request={}, error={}", create_request, e)

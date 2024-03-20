@@ -36,3 +36,7 @@ class CreateUserResponse(BaseModel):
 
 class DeleteUserResponse(BaseModel):
     status: int
+
+
+class NewRSVPResponse(BaseModel):
+    status: int

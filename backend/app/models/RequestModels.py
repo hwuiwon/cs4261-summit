@@ -6,8 +6,14 @@ class CreatePostRequest(BaseModel):
     title: str
     description: str
     tags: str
+    max_people: int
 
 
 class CreateUserRequest(BaseModel):
     email: str
     name: str
+
+
+class RSVPRequest(BaseModel):
+    post_id: str
+    user_id: str
