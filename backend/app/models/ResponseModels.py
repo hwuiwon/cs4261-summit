@@ -34,6 +34,10 @@ class CreateUserResponse(BaseModel):
     status: int
 
 
+class UpdateUserSkillResponse(BaseModel):
+    status: int
+
+
 class DeleteUserResponse(BaseModel):
     status: int
 

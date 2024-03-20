@@ -3,12 +3,13 @@ from http import HTTPStatus
 from exceptions import SummitDBException, SummitException, SummitExceptionCode
 from fastapi import APIRouter
 from loguru import logger
-from models.RequestModels import CreateUserRequest
+from models.RequestModels import CreateUserRequest, UpdateUserSkillRequest
 from models.ResponseModels import (
     CreateUserResponse,
     DeleteUserResponse,
     ErrorDTO,
     GetUserResponse,
+    UpdateUserSkillResponse,
 )
 from services import DynamoDBService
 
@@ -82,6 +83,38 @@ async def create_user(create_request: CreateUserRequest):
         raise
 
     return CreateUserResponse(status=HTTPStatus.OK.value)
+
+
+@router.patch(
+    "/user",
+    summary="Update user skills",
+    tags=["User"],
+    response_model=UpdateUserSkillResponse,
+    responses={
+        200: {"model": UpdateUserSkillResponse, "description": "OK"},
+        400: {"model": ErrorDTO, "message": "Error: Bad request"},
+    },
+)
+async def update_user_skills(update_request: UpdateUserSkillRequest):
+    if not update_request.user_id or not update_request.skills:
+        raise SummitException(
+            code=SummitExceptionCode.BAD_REQUEST,
+            message="ID and skills are required",
+        )
+
+    logger.info("update_request={}", update_request)
+
+    dynamodb_service = DynamoDBService()
+
+    try:
+        dynamodb_service.update_user_skills(
+            email=update_request.user_id, skills=update_request.skills
+        )
+    except SummitDBException as e:
+        logger.error("update_request={}, error={}", update_request, e)
+        raise
+
+    return UpdateUserSkillResponse(status=HTTPStatus.OK.value)
 
 
 @router.delete(

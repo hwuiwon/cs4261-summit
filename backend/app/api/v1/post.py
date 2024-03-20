@@ -93,6 +93,7 @@ async def create_post(create_request: CreatePostRequest):
         or not create_request.title
         or not create_request.description
         or not create_request.max_people
+        or not create_request.skill_level
     ):
         raise SummitException(
             code=SummitExceptionCode.BAD_REQUEST,
@@ -109,6 +110,7 @@ async def create_post(create_request: CreatePostRequest):
             title=create_request.title,
             description=create_request.description,
             tags=create_request.tags.split(","),
+            skill_level=create_request.skill_level,
             max_people=create_request.max_people,
         )
     except SummitDBException as e:

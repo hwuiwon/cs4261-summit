@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from constants import SKILL_LEVEL
 
 
 class CreatePostRequest(BaseModel):
@@ -7,6 +8,7 @@ class CreatePostRequest(BaseModel):
     description: str
     tags: str
     max_people: int
+    skill_level: SKILL_LEVEL
 
 
 class CreateUserRequest(BaseModel):
@@ -17,3 +19,8 @@ class CreateUserRequest(BaseModel):
 class RSVPRequest(BaseModel):
     post_id: str
     user_id: str
+
+
+class UpdateUserSkillRequest(BaseModel):
+    user_id: str
+    skills: dict[str, SKILL_LEVEL]
