@@ -22,6 +22,7 @@ dynamodb_service = DynamoDBService()
 | `/user`                        | Register a new user                  | POST   |
 | `/user/{user_id}`              | Retrieve a user's details            | GET    |
 | `/user/{user_id}`              | Delete a user's account              | DELETE |
+| `/user`                        | Edit user's skills                   | PATCH  |
 """
 
 
