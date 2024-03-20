@@ -209,6 +209,7 @@ class DynamoDBService:
 
         user = self.get_user(email)
         user.skills = skills
+        user.updated_at = str(time.time())
         self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
 
     def delete_user(self, id: str) -> dict:
