@@ -24,3 +24,15 @@ class RSVPRequest(BaseModel):
 class UpdateUserSkillRequest(BaseModel):
     user_id: str
     skills: dict[str, SKILL_LEVEL]
+
+
+class CreateCommentRequest(BaseModel):
+    user_id: str
+    post_id: str
+    data: str
+
+
+class DeleteCommentRequest(BaseModel):
+    user_id: str
+    post_id: str
+    comment_id: str

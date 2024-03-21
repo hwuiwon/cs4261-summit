@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from utils import deserialize
+
 from exceptions import SummitDBException, SummitException, SummitExceptionCode
 from fastapi import APIRouter
 from loguru import logger
@@ -15,6 +17,7 @@ from services import DynamoDBService
 
 router = APIRouter()
 dynamodb_service = DynamoDBService()
+
 
 """
 | Endpoint                       | Description                          | Method |
@@ -49,6 +52,8 @@ async def get_user(user_id: str):
     except SummitDBException as e:
         logger.error("user_id={}, error={}", user_id, e)
         raise
+
+    user.posts = [deserialize(i) for i in user.posts]
 
     return GetUserResponse(status=HTTPStatus.OK.value, user=user)
 

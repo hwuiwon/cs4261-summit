@@ -44,3 +44,11 @@ class DeleteUserResponse(BaseModel):
 
 class NewRSVPResponse(BaseModel):
     status: int
+
+
+class CreateCommentResponse(BaseModel):
+    status: int
+
+
+class DeleteCommentResponse(BaseModel):
+    status: int
