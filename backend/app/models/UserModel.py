@@ -7,6 +7,8 @@ class UserModel(BaseModel):
     id: str
     name: str
     current_rsvps: list[str]
+    posts: list[dict]
+    comments: list[dict]
     keywords: list[str]
     skills: dict[str, SKILL_LEVEL]
     created_at: str
@@ -20,6 +22,8 @@ def to_user_model(response: dict) -> UserModel:
         id=item.get("id", ""),
         name=item.get("name", ""),
         keywords=item.get("keywords", []),
+        posts=item.get("posts", []),
+        comments=item.get("comments", []),
         current_rsvps=item.get("current_rsvps", []),
         skills=item.get("skills", {}),
         created_at=item.get("created_at", ""),

@@ -128,6 +128,7 @@ class DynamoDBService:
             "max_people": {"N": str(max_people)},
             "tags": {"L": [{"S": i} for i in tags]},
             "participant_ids": {"L": [{"S": user_id}]},
+            "comments": {"L": []},
             "created_at": {"S": timestamp},
             "updated_at": {"S": timestamp},
         }
@@ -136,6 +137,7 @@ class DynamoDBService:
 
         user = self.get_user(user_id)
         user.current_rsvps.append(post_id)
+        user.posts.append(new_post)
         self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
 
     def get_post(self, post_id: str) -> PostModel:
@@ -161,12 +163,18 @@ class DynamoDBService:
 
         removed_post = self.delete_item(DYNAMODB_POST_TABLE, get_post_key(post_id))
 
-        post = to_post_model(removed_post)
+        post = to_post_model({"Item": removed_post["Attributes"]})
+
+        logger.info(post)
 
         for id in post.participant_ids:
             user = self.get_user(id)
             user.current_rsvps.remove(post_id)
             self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
+
+        user = self.get_user(post.user_id)
+        user.posts = [i for i in user.posts if i["id"]["S"] != post.id]
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
 
         return removed_post
 
@@ -193,6 +201,8 @@ class DynamoDBService:
             "name": {"S": name},
             "keywords": {"L": []},
             "current_rsvps": {"L": []},
+            "posts": {"L": []},
+            "comments": {"L": []},
             "skills": {"M": {}},
             "created_at": {"S": timestamp},
             "updated_at": {"S": timestamp},
@@ -271,4 +281,60 @@ class DynamoDBService:
 
         user = self.get_user(user_id)
         user.current_rsvps.remove(post_id)
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
+
+    def create_comment(
+        self,
+        user_id: str,
+        post_id: str,
+        data: str,
+    ) -> None:
+        logger.info(
+            "user_id={}, post_id={}, data={}",
+            user_id,
+            post_id,
+            data,
+        )
+
+        post = self.get_post(post_id)
+
+        timestamp = str(time.time())
+        comment_id = str(uuid.uuid4())
+
+        new_comment = {
+            "id": comment_id,
+            "user_id": user_id,
+            "post_id": post_id,
+            "data": data,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+        }
+
+        post.comments.append(new_comment)
+        self.put_item(DYNAMODB_POST_TABLE, serialize(post.dict()))
+
+        user = self.get_user(user_id)
+        user.comments.append(new_comment)
+        self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
+
+    def remove_comment(
+        self,
+        user_id: str,
+        post_id: str,
+        comment_id: str,
+    ) -> None:
+        logger.info(
+            "user_id={}, post_id={}, comment_id={}",
+            user_id,
+            post_id,
+            comment_id,
+        )
+
+        post = self.get_post(post_id)
+        logger.info(post.comments)
+        post.comments = [i for i in post.comments if i["id"] != comment_id]
+        self.put_item(DYNAMODB_POST_TABLE, serialize(post.dict()))
+
+        user = self.get_user(user_id)
+        user.comments = [i for i in user.comments if i["id"] != comment_id]
         self.put_item(DYNAMODB_USER_TABLE, serialize(user.dict()))
