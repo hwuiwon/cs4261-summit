@@ -1,89 +1,121 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import SectionContainer from '../components/SectionContainer'
-import Header from '../components/Header';
+
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const BlogPost = ({ date, title, tags, summary }) => (
-  <div className="text-white py-6">
-    <li className="py-5 border-b border-gray-700">
-      <article className="px-6">
-        <dd className="text-base font-medium leading-6 text-gray-400">
-          <time dateTime={date}>{date}</time>
-        </dd>
-        <h2 className="text-2xl font-bold leading-8 tracking-tight my-2">
-          <a href={`#${title}`} className="hover:text-gray-300">
-            {title}
-          </a>
-        </h2>
-        {tags && (
-          <div className="flex flex-wrap gap-2 mb-2">
-            {tags.map((tag, index) => (
-              <span key={index} className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="text-gray-400">
-          {summary}
-        </div>
-      </article>
-    </li>
-  </div>
-);
-
-export default function BlogPage({ posts }) {
+export default function Home() {
   const router = useRouter();
-  const navigateToCreatePost = () => {
-    router.push(`/create-post`);
-  };
-  const [blogPosts, setBlogPosts] = useState(posts || []);
 
-  useEffect(() => {
-        // Fetch blog posts from an API or define them here
-        const posts = [
-          { date: 'March 7, 2024', title: "Let's play", tags: ['4pm', 'Stamps Field', 'Soccer'], summary: 'Coming with 4 players, looking ofr at least 8 more, please bring dark and light shirts to make teams!' },
-          { date: 'March 8, 2024', title: 'URGENT', tags: ['8pm', 'CRC 4th floor', 'BasketBall'], summary: 'Need at least 8 more to play full court, can play half court with at least 4 more!' }
-          // ... more posts
-        ];
-        setBlogPosts(posts);
-      }, []);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const signIn = () => {
+    if (email == "hkim944@gatech.edu" && password == "1234") {
+      router.push(`/postlist?id=${email}`);
+    }
+  };
+  const createUser = () => {
+      router.push(`/create-user`);
+  };
 
   return (
-    <div className="bg-gray-950">
-      <Header />
-    <SectionContainer>
-      <div className="min-h-screen">
-        <h1 className="text-4xl font-bold text-white py-6 px-6">
-          Notice Board
-        </h1>
-        <ul>
-          {blogPosts.map((post, index) => (
-            <BlogPost
-              key={index}
-              date={post.date}
-              title={post.title}
-              tags={post.tags}
-              summary={post.summary}
-            />
-          ))}
-        </ul>
-      </div>
-      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 pb-8">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                navigateToCreatePost();
-              }}
-              className="flex items-center justify-center p-0 w-16 h-16 bg-indigo-800 rounded-full hover:bg-indigo-700 active:shadow-lg mouse shadow transition ease-in duration-200 focus:outline-none"
-            >
-              <svg viewBox="0 0 24 24" className="w-10 h-10 text-indigo-100" fill="currentColor">
-                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-              </svg>
-            </button>
+    <>
+      <div className="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-gray-100">
+            Sign in to your account
+          </h2>
+        </div>
+
+        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+          <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+            <form className="space-y-6" action="#" method="POST">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Email address
+                </label>
+                <div className="mt-2">
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
+                  Password
+                </label>
+                <div className="mt-2">
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  />
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-3 block text-sm leading-6 text-gray-900"
+                  >
+                    Remember me
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    signIn();
+                  }}
+                  className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  Sign in
+                </button>
+                </div>
+                <div>
+                <button
+                  type="submit"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    createUser();
+                  }}
+                  className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  Create User
+                </button>
+              </div>
+            </form>
           </div>
-      </SectionContainer>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
+

@@ -31,7 +31,6 @@ const Header = () => {
             </div>
           </div>
           <div className="hidden md:block">
-            {/* Theme switcher placeholder */}
             <div className="ml-4 flex items-center md:ml-6">
               {/* <button className="bg-gray-800 dark:bg-gray-200 p-1 rounded-full text-white dark:text-gray-800 hover:text-gray-400 dark:hover:text-gray-600">
                 
