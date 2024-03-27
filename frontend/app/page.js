@@ -10,7 +10,7 @@ export default function Home() {
   const [password, setPassword] = useState("");
 
   const signIn = () => {
-    if (email == "hkim944@gatech.edu" && password == "1234") {
+    if (email == "hkim944@gatech.edu" || email == "ykim3001@gatech.edu" || email == "yunsukim1@gmail.com" && password == "1234") {
       router.push(`/postlist?id=${email}`);
     }
   };

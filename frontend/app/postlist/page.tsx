@@ -9,13 +9,9 @@ import { useSearchParams } from "next/navigation";
 
 const PostListPage = () => {
     const [posts, setPosts] = useState([]);
-    // const [selectedPostId, setSelectedPostId] = useState(null);
-    // const [selectedPostDetails, setSelectedPostDetails] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const router = useRouter();
-    // const [comment, setComment] = useState('');
-    // const [isCommentSubmitting, setIsCommentSubmitting] = useState(false);
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
     console.log(id);
@@ -40,12 +36,12 @@ const PostListPage = () => {
     };
 
     const navigateToCreatePost = () => {
-        router.push('/create-post?id=${id}'); 
+        router.push(`/create-post?id=${id}`);
     };
 
     const renderPostList = () => (
         <div className="bg-gray-950 text-white">
-        <Header />
+        <Header id={id} />
         <SectionContainer>
             <div className="min-h-screen">
             <h1 className="text-4xl font-bold py-6 px-6">Notice Board</h1>
@@ -89,21 +85,21 @@ const PostListPage = () => {
             </ul>
             </div>
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 pb-8">
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigateToCreatePost();
-                            }}
-                            className="flex items-center justify-center p-0 w-12 h-12 bg-indigo-800 rounded-full hover:bg-indigo-700 active:shadow-lg mouse shadow transition ease-in duration-200 focus:outline-none"
-                        >
-                            <svg viewBox="0 0 24 24" className="w-6 h-6 text-indigo-100" fill="currentColor">
-                                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                            </svg>
-                        </button>
-                    </div>
-                </SectionContainer>
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        navigateToCreatePost();
+                    }}
+                    className="flex items-center justify-center p-0 w-12 h-12 bg-indigo-800 rounded-full hover:bg-indigo-700 active:shadow-lg mouse shadow transition ease-in duration-200 focus:outline-none"
+                >
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 text-indigo-100" fill="currentColor">
+                        <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                    </svg>
+                </button>
             </div>
-    );
+        </SectionContainer>
+    </div>
+);
     if (isLoading) return <div>Loading...</div>;
     return renderPostList();
 };

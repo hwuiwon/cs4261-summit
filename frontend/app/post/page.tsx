@@ -26,7 +26,8 @@ const PostDetailsPage = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_id: id, 
+                    user_id: id,
+                    post_id: postId,
                     data: comment,
                 }),
             });
@@ -36,7 +37,7 @@ const PostDetailsPage = () => {
             }
             
             setComment('');
-            //fetch the post details again to refresh comments
+            //refresh comments
             window.location.reload();
         } catch (error) {
             console.error('Error submitting comment:', error);
@@ -76,7 +77,7 @@ const PostDetailsPage = () => {
             if (!response.ok) {
                 throw new Error('Failed to delete post.');
             }
-            router.push('/postlist?id=${id}');
+            router.push(`/postlist?id=${id}`);
         } catch (error) {
             console.error('Error deleting post:', error);
         }
@@ -107,36 +108,15 @@ const PostDetailsPage = () => {
                 throw new Error('Failed to delete comment.');
             }
             
-            window.location.reload(); // Fetch post details again to refresh comments
+            window.location.reload(); 
         } catch (error) {
             console.error('Error deleting comment:', error);
         }
     };
 
-    const handleRSVP = async () => {
-        try {
-            const response = await fetch('http://localhost:8000/v1/rsvp', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    post_id: postId,
-                    user_id: id,
-                }),
-            });
-    
-            if (!response.ok) {
-                throw new Error('Failed to RSVP to the event.');
-            }
-            window.location.reload();
-        } catch (error) {
-            console.error('Error RSVPing to the event:', error);
-        }
-    };
     const toggleRSVP = async () => {
         const url = 'http://localhost:8000/v1/rsvp';
-        const method = hasRSVPd ? 'DELETE' : 'POST'; // Determine method based on current RSVP state
+        const method = hasRSVPd ? 'DELETE' : 'POST';
         
         try {
             const response = await fetch(url, {
@@ -153,17 +133,13 @@ const PostDetailsPage = () => {
             if (!response.ok) {
                 throw new Error(`Failed to ${hasRSVPd ? 'cancel' : 'make'} RSVP.`);
             }
-
-            // Toggle the RSVP state on successful RSVP/cancellation
             setHasRSVPd(!hasRSVPd);
-            // Optionally, refresh the post details to reflect the new state
             window.location.reload();
         } catch (error) {
             console.error(error.message);
         }
     };
 
-    // Determine initial RSVP state (assuming fetchPostDetails populates selectedPostDetails)
     useEffect(() => {
         if (selectedPostDetails && selectedPostDetails.participant_ids) {
             const isRSVPd = selectedPostDetails.participant_ids.includes(id);
@@ -208,7 +184,7 @@ const PostDetailsPage = () => {
 
         return (
             <div className="min-h-screen bg-gray-950 text-white">
-            <Header />
+            <Header id={id} />
             <SectionContainer>
             <div className="max-w-xl mx-auto my-6 p-6 rounded-lg bg-gray-900 shadow-lg">
             <div className="flex justify-between items-start mb-4">
@@ -220,19 +196,17 @@ const PostDetailsPage = () => {
             {selectedPostDetails.user_id} · {new Date(selectedPostDetails.created_at * 1000).toLocaleString()} 
             </div>
             {selectedPostDetails.user_id === id && (
-                        <button 
-                            onClick={handleDeleteClick} 
-                            className="text-gray-400 text-xs hover:text-red-400"
-                            title="Delete Post"
-                        >
-                            x
-                        </button>
-                    )}
+                <button 
+                    onClick={handleDeleteClick} 
+                    className="text-gray-400 text-xs hover:text-red-400"
+                    title="Delete Post"
+                >
+                    x
+                </button>
+            )}
             </div>
-            
                 <h1 className="text-3xl font-bold mb-4">{selectedPostDetails.title}</h1>
-                
-                <div className="flex flex-wrap items-center gap-2 mb-4">
+                    <div className="flex flex-wrap items-center gap-2 mb-4">
                         {selectedPostDetails.tags.map((tag, index) => (
                             <span key={index} className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
                                 {tag}
@@ -246,30 +220,28 @@ const PostDetailsPage = () => {
                             Skill Level: {selectedPostDetails.skill_level}
                         </span>
                     </div>
-                
                 <p className="mt-4"><strong></strong> {selectedPostDetails.description}</p>
                 {/* <p className="mt-2"><strong>Posted On:</strong> {new Date(selectedPostDetails.created_at * 1000).toLocaleString()}</p> */}
-                
                 <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center gap-2"> {/* Adjust the gap as needed */}
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        RSVP required: {selectedPostDetails.participant_ids && selectedPostDetails.participant_ids.length >= selectedPostDetails.max_people ? 'No' : 'Yes'}
-                    </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        RSVP counts: {selectedPostDetails.participant_ids ? selectedPostDetails.participant_ids.length : 0} / {selectedPostDetails.max_people}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                            RSVP required: {selectedPostDetails.participant_ids && selectedPostDetails.participant_ids.length >= selectedPostDetails.max_people ? 'No' : 'Yes'}
+                        </span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            RSVP counts: {selectedPostDetails.participant_ids ? selectedPostDetails.participant_ids.length : 0} / {selectedPostDetails.max_people}
+                        </span>
+                    </div>
+                    {selectedPostDetails.user_id != id && (
+                        <button 
+                            onClick={toggleRSVP} 
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${hasRSVPd ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-500'}`}
+                        >
+                            RSVP
+                        </button>
+                    )}
+                    </div>
                 </div>
-                {selectedPostDetails.user_id != id && (
-                    <button 
-                        onClick={toggleRSVP} 
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${hasRSVPd ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-500'}`}
-                    >
-                        RSVP
-                    </button>
-                )}
-                </div>
-                </div>
-                <div className="max-w-xl mx-auto mb-6 p-6">
+            <div className="max-w-xl mx-auto mb-6 p-6">
             <h2 className="text-xl font-semibold mb-4">Comments</h2>
             {selectedPostDetails.comments && selectedPostDetails.comments.length > 0
                 ? renderComments(selectedPostDetails.comments)
@@ -282,7 +254,7 @@ const PostDetailsPage = () => {
                 submitComment();
             }} className="flex flex-col">
                 <textarea
-                className="w-full p-2 mb-2 rounded text-gray-900"
+                className="w-full p-2 mb-2 bg-gray-200 rounded text-gray-900 text-xs"
                 placeholder="Your comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -291,7 +263,7 @@ const PostDetailsPage = () => {
                 <button
                 type="submit"
                 disabled={isCommentSubmitting}
-                className="self-end px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-800 disabled:bg-indigo-400"
+                className="self-end px-7 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-800 disabled:bg-indigo-400"
                 >
                 {isCommentSubmitting ? 'Submitting...' : 'Submit'}
                 </button>

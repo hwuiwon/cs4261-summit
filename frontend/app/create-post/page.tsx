@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import SectionContainer from '../..//components/SectionContainer';
 import Header from '../..//components/Header';
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function CreatePostPage() {
   const [userId, setUserId] = useState("");
@@ -12,6 +13,8 @@ export default function CreatePostPage() {
   const [skillLevel, setSkillLevel] = useState("");
   const [tags, setTags] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +39,7 @@ export default function CreatePostPage() {
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
-      router.push('/postlist');
+      router.push(`/postlist?id=${id}`);
       const result = await response.json();
       console.log("Post created successfully:", result);
       alert("Post created successfully!");
@@ -56,7 +59,7 @@ export default function CreatePostPage() {
   
   return (
     <div className="bg-gray-950 min-h-screen flex flex-col">
-      <Header />
+      <Header id={id} />
       <div className="flex-grow">
         <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-white mb-8">
@@ -68,8 +71,9 @@ export default function CreatePostPage() {
               <input
                 type="text"
                 id="userId"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
+                value={id}
+                // onChange={(e) => setUserId(e.target.value)}
+                readOnly
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-900"
                 required
               />
